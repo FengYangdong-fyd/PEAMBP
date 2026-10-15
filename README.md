@@ -4,11 +4,9 @@ This repository provides a **precompiled Linux executable** of PEAMBP, the paral
 
 The maximum bisection problem (MBP) seeks a partition of the vertices of a weighted, undirected graph into two subsets with sizes differing by at most one, maximizing the total weight of edges crossing the partition.
 
-> **Code availability:** The repository currently provides the executable `PEAMBP`. The complete C++ source code is planned for release in this repository upon acceptance of the manuscript. Benchmark graph files are not included.
+> **Code availability:** The repository currently provides the executable `PEAMBP`. The complete C++ source code will be uploaded to this repository after the manuscript is accepted. Benchmark graph files are not included.
 
-## 1. System requirements and experimental environment
-
-The provided `PEAMBP` file is a **64-bit Linux (x86-64) ELF executable**, not a Windows `.exe`. It requires a compatible Linux runtime and standard C++ shared libraries. It can be run directly on Linux or in a suitable Linux environment; it cannot be launched as a native Windows executable.
+## 1. Experimental environment
 
 The experiments reported in the manuscript were conducted using the following environment:
 
@@ -20,8 +18,6 @@ The experiments reported in the manuscript were conducted using the following en
 | Memory | 1 TB RAM |
 | Compiler | GNU g++ 11.4.0 |
 | Language / build options | C++11; `-O3 -std=c++11 -pthread` |
-
-The compiler information describes the experimental build environment; **no compilation is needed** to use the executable distributed here. Compatibility with other Linux distributions or library versions is not guaranteed.
 
 ## 2. Graph input
 
@@ -103,17 +99,21 @@ All numeric arguments must be positive integers. `task_id` is an output label, *
 ./PEAMBP 1 1 10 2 demo 1
 
 # Main paper configuration on the large instance G58:
-# 16 independent runs (run identifiers 1–16), 16 threads, 500 s per run.
+# The original experiment runner launched one process per run identifier.
+# Run 1 of 16, using 16 threads and a 500 s cutoff:
+./PEAMBP 58 1 500 16 PEAMBP16_seed001 1
+
+# Run 16 of 16 (the runner also executed runs 2–15 separately):
+./PEAMBP 58 1 500 16 PEAMBP16_seed016 16
+
+# Main paper configuration on the medium instance G25, run 1:
+./PEAMBP 25 1 200 16 PEAMBP16_seed001 1
+
+# Alternatively, the executable also supports 16 sequential runs in one process:
 ./PEAMBP 58 16 500 16 main 1
-
-# Main paper configuration on the medium instance G25:
-./PEAMBP 25 16 200 16 main 1
-
-# Example of continuing with run identifiers 9–16 in a separate task:
-./PEAMBP 58 8 500 16 main_part2 9
 ```
 
-The first example requires `big Group/g1/g1data.txt`; the others require the corresponding `g25` or `g58` files. `runs` does not specify the thread count, and the cutoff applies separately to every run.
+The first example requires `big Group/g1/g1data.txt`; the others require the corresponding `g25` or `g58` files. The paper's main experiment used one run per invocation, repeated for run identifiers 1–16 by the experiment runner. The last example is a valid alternative invocation but differs from that scheduling arrangement. `runs` does not specify the thread count, and the cutoff applies separately to every run.
 
 ## 4. Random seed configuration
 
@@ -147,40 +147,3 @@ The paper evaluates **71 weighted G-set instances** (`G1`–`G67`, `G70`, `G72`,
 | Large | `n > 2000` | G48–G50, G55–G67, G70, G72, G77, G81 | 20 | 500 s |
 
 The main comparison uses 16 threads and run identifiers 1–16. Thread-count and convergence experiments use the settings described in the manuscript. The time limit is based on **elapsed (wall-clock) time**, not on accumulated CPU time.
-
-## 6. Output files and interpretation
-
-PEAMBP writes five types of text files to the pre-existing `output/` directory. Their names follow the pattern:
-
-```text
-output/<graph_number>_<metric>_Task_<task_id>_max_threads_<threads>_count_num_<runs>_cutoff_time_<cutoff_seconds>_PEAMBP_.txt
-```
-
-The `<metric>` field is one of:
-
-| Metric | Meaning |
-| --- | --- |
-| `Result` | Best objective value found during each run, followed by a summary (maximum, mean, hit count, timing statistics). |
-| `Time` | Elapsed wall-clock seconds at which the final best solution was found. |
-| `SolTime` | Total elapsed wall-clock seconds for the completed search run. |
-| `CPUTime` | Total **process CPU seconds**, accumulating user and system CPU time across all worker threads. |
-| `CPUTimeToBest` | Accumulated process CPU seconds when the final best solution was first obtained. |
-
-For example, the objective-value file produced by `./PEAMBP 58 16 500 16 main 1` is:
-
-```text
-output/58_Result_Task_main_max_threads_16_count_num_16_cutoff_time_500_PEAMBP_.txt
-```
-
-In the manuscript, `Best` is the maximum objective value across the independent runs, and `Avg` is their arithmetic mean. The reported time-to-best for parallel PEAMBP uses the corresponding **CPUTimeToBest** measurement; this should not be confused with wall-clock `Time`.
-
-**Output files are opened in append mode.** Reusing exactly the same arguments and task identifier appends another set of results to existing files; it does not overwrite them. Use a fresh task identifier, move old results, or clear the relevant output files before starting a new experiment to avoid mixing runs.
-
-## 7. Notes on reproducibility
-
-- Input graph data must be supplied separately in the required directory layout.
-- Run the binary from the project directory containing `big Group/` and `output/`; paths are relative to the current working directory.
-- For published-comparison settings, retain the specified time limits, thread counts, and run identifiers.
-- Different processor configurations, operating systems, and concurrent system workloads may affect timing results.
-- This distribution contains a precompiled executable; source-level modifications and recompilation will become possible once the C++ source is released.
-
