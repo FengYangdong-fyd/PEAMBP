@@ -4,7 +4,7 @@ This repository provides a **precompiled Linux executable** of PEAMBP, the paral
 
 The maximum bisection problem (MBP) seeks a partition of the vertices of a weighted, undirected graph into two subsets with sizes differing by at most one, maximizing the total weight of edges crossing the partition.
 
-> **Code availability:** The repository currently provides the executable `PEAMBP`. The complete C++ source code will be uploaded to this repository after the manuscript is accepted. Benchmark graph files are not included.
+> **Code availability:** The repository currently provides the executable `PEAMBP` and the 71 G-set benchmark graph files used in our experiments. The complete C++ source code will be uploaded to this repository after the manuscript is accepted.
 
 ## 1. Experimental environment
 
